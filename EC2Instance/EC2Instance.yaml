@@ -1,0 +1,25 @@
+//how to create ec2 instance using cfn template?
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Simple EC2 Instance Template
+
+Resources:
+  MyEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0abcdef1234567890  # Replace with your desired AMI ID
+      InstanceType: t2.micro          # Replace with your desired instance type
+      KeyName: my-key-pair            # Replace with your key pair name
+      SecurityGroupIds:
+        - sg-0123456789abcdef0        # Replace with your security group ID
+      SubnetId: subnet-0123456789abcdef0  # Replace with your subnet ID
+      Tags:
+        - Key: Name
+          Value: MyEC2Instance
+
+Outputs:
+  InstanceId:
+    Description: Instance ID of the newly created EC2 instance
+    Value: !Ref MyEC2Instance
+  PublicIP:
+    Description: Public IP address of the newly created EC2 instance
+    Value: !GetAtt MyEC2Instance.PublicIp
