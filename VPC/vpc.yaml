@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFormation template to create VPC and Subnets.
+
+Resources:
+  MyVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyApplicationVPC
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: MyPublicSubnet
+
+  PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: 10.0.2.0/24
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: MyPrivateSubnet
+
+Outputs:
+  VPCId:
+    Description: The ID of the VPC.
+    Value: !Ref MyVPC
+
+  PublicSubnetId:
+    Description: The ID of the Public Subnet.
+    Value: !Ref PublicSubnet
+
+  PrivateSubnetId:
+    Description: The ID of the Private Subnet.
+    Value: !Ref PrivateSubnet
