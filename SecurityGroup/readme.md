@@ -84,3 +84,5 @@ aws cloudformation delete-stack --stack-name MySecurityGroupStack
 ```
 
 This will clean up all resources created by the stack.
+
+## NOTE: The template present in the repository has hardcoded inbound and outbound rules. Make sure you change that according to your need/requirement. Thank you !!
