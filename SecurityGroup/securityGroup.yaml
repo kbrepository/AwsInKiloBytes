@@ -1,58 +1,28 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Template to create a dynamic AWS Security Group
+Description: Template to create a static AWS Security Group
 
 Parameters:
   VpcId:
-    Type: String
+    Type: "AWS::EC2::VPC::Id"
     Description: The ID of the VPC where the security group will be created.
-
-  SecurityGroupName:
-    Type: String
-    Description: Name of the Security Group.
-    Default: "DynamicSecurityGroup"
-
-  SecurityGroupDescription:
-    Type: String
-    Description: Description of the Security Group.
-    Default: "Security group created dynamically."
-
-  IngressRules:
-    Type: CommaDelimitedList
-    Description: List of ingress rules to be added to the security group.
-    Default: []
-
-  EgressRules:
-    Type: CommaDelimitedList
-    Description: List of egress rules to be added to the security group.
-    Default: []
 
 Resources:
   SecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
-      GroupName: !Ref SecurityGroupName
-      GroupDescription: !Ref SecurityGroupDescription
+      GroupName: "StaticSecurityGroup"
+      GroupDescription: "Static security group with hardcoded rules."
       VpcId: !Ref VpcId
-      SecurityGroupIngress: !If 
-        - IsIngressEmpty
-        - !Ref "AWS::NoValue"
-        - !Split
-          - "|"
-          - !Join
-            - "|"
-            - !Ref IngressRules
-      SecurityGroupEgress: !If
-        - IsEgressEmpty
-        - !Ref "AWS::NoValue"
-        - !Split
-          - "|"
-          - !Join
-            - "|"
-            - !Ref EgressRules
-
-Conditions:
-  IsIngressEmpty: !Equals [!Length !Ref IngressRules, 0]
-  IsEgressEmpty: !Equals [!Length !Ref EgressRules, 0]
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
 
 Outputs:
   SecurityGroupId:
