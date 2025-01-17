@@ -1,11 +1,24 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: CloudFormation template to create VPC and Subnets.
 
+Parameters:
+  VPCCIDR:
+    Type: String
+    Description: The CIDR block for the VPC.
+    Default: 10.0.0.0/16
+  PubSubCIDR:
+    Type: String
+    Description: The CIDR block for the public subnet.
+    Default: 10.0.1.0/24
+  PriSubCIDR:
+    Type: String
+    Description: The CIDR block for the private subnet.
+    Default: 10.0.2.0/24
 Resources:
   MyVPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: 10.0.0.0/16
+      CidrBlock: !Ref VPCCIDR
       EnableDnsSupport: true
       EnableDnsHostnames: true
       Tags:
@@ -16,7 +29,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref MyVPC
-      CidrBlock: 10.0.1.0/24
+      CidrBlock: !Ref PubSubCIDR
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -26,7 +39,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref MyVPC
-      CidrBlock: 10.0.2.0/24
+      CidrBlock: !Ref PriSubCIDR
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
