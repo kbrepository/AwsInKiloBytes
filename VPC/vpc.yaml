@@ -25,6 +25,21 @@ Resources:
         - Key: Name
           Value: MyApplicationVPC
 
+## Create internet Gateway and attach it to VPC
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub 'My-igw-${AWS::Region}'
+
+  VPCGatewayAttachment:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref MyVPC
+
+
   PublicSubnet:
     Type: AWS::EC2::Subnet
     Properties:
@@ -57,3 +72,4 @@ Outputs:
   PrivateSubnetId:
     Description: The ID of the Private Subnet.
     Value: !Ref PrivateSubnet
+
