@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  RoleName:
+    Type: String
+    Description: The name of the IAM role
+  RoleDescription:
+    Type: String
+    Description: The description of the IAM role
+  Policies:
+    Type: CommaDelimitedList
+    Description: A list of IAM policies to attach to the role
+
+Resources:
+  IamRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      RoleName: !Sub '${RoleName}'
+      Description: !Sub '${RoleDescription}'
+      Policies:
+        - PolicyName: !Sub '${RoleName}Policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: !Split [',', !Sub '${Policies}']
+                Resource: '*'
+
+Outputs:
+  RoleArn:
+    Value: !GetAtt IamRole.Arn
+    Description: The ARN of the IAM role
