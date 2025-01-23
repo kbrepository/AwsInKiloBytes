@@ -2,6 +2,10 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: CloudFormation template to create VPC and Subnets.
 
 Parameters:
+  Tag:
+    Type: String
+    Description: Tag for the resources.
+    Default: Test
   VPCCIDR:
     Type: String
     Description: The CIDR block for the VPC.
@@ -14,6 +18,7 @@ Parameters:
     Type: String
     Description: The CIDR block for the private subnet.
     Default: 10.0.2.0/24
+
 Resources:
   MyVPC:
     Type: AWS::EC2::VPC
@@ -23,7 +28,7 @@ Resources:
       EnableDnsHostnames: true
       Tags:
         - Key: Name
-          Value: MyApplicationVPC
+          Value: !Sub ${Tag}-MyApplicationVPC
 
 ## Create internet Gateway and attach it to VPC
   InternetGateway:
@@ -31,7 +36,7 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: !Sub 'My-igw-${AWS::Region}'
+          Value: !Sub '${Tag}-My-igw-${AWS::Region}'
 
   VPCGatewayAttachment:
     Type: 'AWS::EC2::VPCGatewayAttachment'
@@ -48,7 +53,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: MyPublicSubnet
+          Value: !Sub ${Tag}-MyPublicSubnet
 
   PrivateSubnet:
     Type: AWS::EC2::Subnet
@@ -58,7 +63,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: MyPrivateSubnet
+          Value: !Sub ${Tag}-MyPrivateSubnet
 
 Outputs:
   VPCId:
