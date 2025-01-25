@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Template to add inbound rule to a Security Group.
+
+Parameters:
+  VPCEndpointSecurityGroupId:
+    Description: The Security Group ID associated with the existing SQS VPC Endpoint.
+    Type: String
+  LambdaSecurityGroupId:
+    Description: The Security Group ID of your Lambda function.
+    Type: String
+
+Resources:
+  AddInboundRuleToVPCEndpointSG:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref VPCEndpointSecurityGroupId  # VPC Endpoint Security Group
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      SourceSecurityGroupId: !Ref LambdaSecurityGroupId  # Lambda Security Group
+
+Outputs:
+  VPCEndpointSecurityGroupUpdated:
+    Description: Confirmation that the VPC Endpoint Security Group has been updated.
+    Value: !Ref VPCEndpointSecurityGroupId
