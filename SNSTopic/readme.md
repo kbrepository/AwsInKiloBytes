@@ -18,3 +18,4 @@ aws cloudformation delete-stack --stack-name testSNSTopic --region us-east-1
 
 ### NOTE: 
 This template is very basic, will be updating it and make it dynamic.
+</html>
