@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFormation template to create SNS Topic and subscription with email as Protocol.
+
+Parameters:
+  TopicName:
+    Type: String
+    Description: Specify name for SNS Topic.
+    Default: TestTopic
+  Endpoint:
+    Type: String
+    Description: Specify name endpoint for subscription (e.g., test@example.com)
+    Default: test@example.com
+
+Resources:
+  MySNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      # Subscription:
+      #   - Endpoint: 
+      #       Fn::GetAtt:
+      #         - "MyQueue1"
+      #         - "Arn"
+      #     Protocol: "Email"
+      #   - Endpoint:
+      #       Fn::GetAtt:
+      #         - "MyQueue2" 
+      #         - "Arn"
+      #     Protocol: "sqs"
+      TopicName: !Ref TopicName
+      DisplayName: !Ref TopicName
+
+  MySubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: !Ref Endpoint
+      Protocol: email
+      TopicArn: !Ref MySNSTopic
+
+Outputs:
+  TopicArn:
+    Description: The ARN of the created SNS topic
+    Value: !Ref MySNSTopic
+  TopicName: 
+    Description: The name of the created SNS topic
+    Value: !GetAtt MySNSTopic.TopicName
+      

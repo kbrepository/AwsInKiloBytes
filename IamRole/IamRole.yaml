@@ -4,9 +4,11 @@ Parameters:
   RoleName:
     Type: String
     Description: The name of the IAM role
+    Default: TestRole
   RoleDescription:
     Type: String
     Description: The description of the IAM role
+    Default: This role is used for testing purpose.
   Policies:
     Type: CommaDelimitedList
     Description: A list of IAM policies to attach to the role
