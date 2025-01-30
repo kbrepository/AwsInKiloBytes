@@ -20,3 +20,8 @@ Resources:
           Value: Production
         - Key: Project
           Value: MyProject
+
+Outputs:
+  BucketName:
+    Description: Name of the created S3 bucket
+    Value: !Ref MyS3Bucket
