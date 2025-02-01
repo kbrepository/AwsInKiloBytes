@@ -1,27 +1,24 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: Template to create an S3 bucket with event notification
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template will create S3 bucket with event notifications.
 
 Parameters:
-  BucketName:
-    Description: 'Specify name of the S3 bucket.'
+  QueueArn:
     Type: String
-    Default: my-unique-bucket-name
-    
+    Description: Specify SQS Queue ARN.
+    Default: ''
 Resources:
-  MyS3Bucket:
-    Type: AWS::S3::Bucket
+  S3Bucket:
+    Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: !Ref BucketName
       AccessControl: Private
-      VersioningConfiguration:
-        Status: Enabled
-      Tags:
-        - Key: Environment
-          Value: Production
-        - Key: Project
-          Value: MyProject
+      NotificationConfiguration:
+        QueueConfiguration:
+          Event: s3:ObjectCreated:*
+          # Filter: 
+          #   NotificationFilter
+          Queue: !Ref QueueArn
 
 Outputs:
   BucketName:
-    Description: Name of the created S3 bucket
-    Value: !Ref MyS3Bucket
+    Value: !Ref S3Bucket
+    Description: Name of the sample Amazon S3 bucket with a notification configuration.
