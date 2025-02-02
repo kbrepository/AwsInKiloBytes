@@ -6,10 +6,15 @@ Parameters:
     Type: String
     Description: Specify SQS Queue ARN.
     Default: ''
+  BucketName:
+    Description: 'Specify name of the S3 bucket.'
+    Type: String
+    Default: my-unique-bucket-name
 Resources:
   S3Bucket:
-    Type: 'AWS::S3::Bucket'
+    Type: AWS::S3::Bucket
     Properties:
+      BucketName: !Ref ${BucketName}
       AccessControl: Private
       NotificationConfiguration:
         QueueConfiguration:
