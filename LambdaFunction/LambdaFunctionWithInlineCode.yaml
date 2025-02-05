@@ -7,15 +7,17 @@ Resources:
       Handler: index.handler
       Role: arn:aws:iam::111122223333:role/lambda-role
       Code:
-        S3Bucket: amzn-s3-demo-bucket
-        S3Key: function.zip
+        ZipFile: |
+          const { S3Client, ListBucketsCommand } = require("@aws-sdk/client-s3");
+          const s3 = new S3Client({ region: "us-east-1" }); // replace "us-east-1" with your AWS Region
+
+          exports.handler = async function(event) {
+            const command = new ListBucketsCommand({});
+            const response = await s3.send(command);
+            return response.Buckets;
+          };
       Runtime: nodejs20.x
       Timeout: 5
       TracingConfig:
         Mode: Active
-      VpcConfig:
-        SecurityGroupIds:
-          - sg-085912345678492fb
-        SubnetIds:
-          - subnet-071f712345678e7c8
-          - subnet-07fd123456788a036
+      
