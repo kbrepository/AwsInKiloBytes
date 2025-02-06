@@ -20,4 +20,8 @@ Resources:
       Timeout: 5
       TracingConfig:
         Mode: Active
-      
+
+Outputs:
+  LambdaFunctionName:
+    Description: OutputDescription
+    Value: !Ref Function
