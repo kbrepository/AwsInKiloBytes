@@ -1,0 +1,8 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description:  This template will create a lambda function with inline code.
+Resources:
+  Function:
+    Type: AWS::Lambda::Function
+      Properties:
+        Handler: index.handler
+        Role: arn:aws:iam::111122223333:role/lambda-role
