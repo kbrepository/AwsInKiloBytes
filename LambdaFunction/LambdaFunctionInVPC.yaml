@@ -21,3 +21,6 @@ Resources:
           - subnet-07fd123456788a036
 
 Outputs:
+  LambdaFunctionName:
+    Description: OutputDescription
+    Value: !Ref Function
