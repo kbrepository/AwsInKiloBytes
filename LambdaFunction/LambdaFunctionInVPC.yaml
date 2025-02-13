@@ -1,15 +1,39 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: This template create a lambda function in a VPC.
+
 Resources:
+  LambdaRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: access-all-resources
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: '*'
+                Resource: '*'
+
   Function:
     Type: AWS::Lambda::Function
+    DependsOn: LambdaRole
     Properties:
       Handler: index.handler
-      Role: arn:aws:iam::111122223333:role/lambda-role
+      Role: !Ref LambdaRole
       Code:
         S3Bucket: amzn-s3-demo-bucket
         S3Key: function.zip
-      Runtime: nodejs20.x
+      Runtime: python3.9
       Timeout: 5
       TracingConfig:
         Mode: Active
