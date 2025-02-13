@@ -26,6 +26,7 @@ Resources:
 
   Function:
     Type: AWS::Lambda::Function
+    DependsOn: LambdaRole
     Properties:
       Handler: index.handler
       Role: !Ref LambdaRole
