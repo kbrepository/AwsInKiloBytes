@@ -21,4 +21,8 @@ Resources:
           AWS: !Ref RoleArnToBeAssumed
         Action: "sts:AssumeRole"
         Effect: Allow
-        
+
+Outputs: 
+  CrossAccountIamRoleArn:
+    Value: !GetAtt CrossAccountRole.Arn
+    Description: "Cross account IAM Role ARN."
