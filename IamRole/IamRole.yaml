@@ -1,7 +1,7 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 
 Parameters:
-  RoleName:
+  IAMRoleName:
     Type: String
     Description: The name of the IAM role
     Default: TestRole
@@ -9,33 +9,34 @@ Parameters:
     Type: String
     Description: The description of the IAM role
     Default: This role is used for testing purpose.
-  Policies:
-    Type: CommaDelimitedList
-    Description: A list of IAM policies to attach to the role
+  # Policies:
+  #   Type: CommaDelimitedList
+  #   Description: A list of IAM policies to attach to the role
 
 Resources:
   IamRole:
-    Type: 'AWS::IAM::Role'
+    Type: "AWS::IAM::Role"
     Properties:
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
               Service:
                 - ec2.amazonaws.com
             Action:
-              - 'sts:AssumeRole'
-      RoleName: !Sub '${RoleName}'
-      Description: !Sub '${RoleDescription}'
+              - "sts:AssumeRole"
+      RoleName: !Ref IAMRoleName
+      Description: !Ref RoleDescription
       Policies:
-        - PolicyName: !Sub '${RoleName}Policy'
+        - PolicyName: test-access
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
-                Action: !Split [',', !Sub '${Policies}']
-                Resource: '*'
+                Action: 
+                - ec2:*
+                Resource: "*"
 
 Outputs:
   RoleArn:

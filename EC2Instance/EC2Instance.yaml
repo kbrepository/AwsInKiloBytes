@@ -18,6 +18,10 @@ Parameters:
   SubnetId:
     Type: String
     Description: Subnet ID.
+  ImageID:
+    Type: String
+    Description: Specify ID of the AMI.
+    Default: ""
 
 Resources:
   MyEC2Instance:
@@ -26,7 +30,7 @@ Resources:
       InstanceType: !Ref InstanceType
       KeyName: !Ref KeyName
       SubnetId: !Ref SubnetId
-      ImageId: ami-0c94855ba95c71c99 # Example Amazon Linux 2 AMI ID
+      ImageId: !Ref ImageID
 
 Outputs:
   InstanceId:

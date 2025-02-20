@@ -47,4 +47,5 @@ Resources:
 Outputs:
   LambdaFunctionName:
     Description: OutputDescription
-    Value: !Ref Function
+    Value: !GetAtt Function.Arn
+  
