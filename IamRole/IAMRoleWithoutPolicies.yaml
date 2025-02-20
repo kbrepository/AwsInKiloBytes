@@ -1,0 +1,24 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: This template creates IAM Role without any policies and assumes IAM role of cross Account.
+
+Parameters:
+  RoleName:
+    Type: String
+    Description: Specify Name for IAM role.
+    Default: cross-account
+  RoleArnToBeAssumed:
+    Type: String
+    Description: Specify ARN for IAM role in cross account.
+    Default: arn:aws:iam::ACCOUNTID:role/ROLENAME
+  
+Resources:
+  CrossAccountRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${RoleName}-${AWS::AccountId}-iam-role
+      AssumeRolePolicyDocument:
+        Principal:
+          AWS: !Ref RoleArnToBeAssumed
+        Action: "sts:AssumeRole"
+        Effect: Allow
+        
