@@ -1,21 +1,6 @@
-Got it! Here's your **`README.md`** file, which includes **instructions, code samples, and a screenshot link** of `index.html`.  
-
----
-
-### **`README.md`**
-```md
 # 🚀 AWS S3 Static Website Deployment using CloudFormation  
 
 This project demonstrates how to deploy a **static website** on AWS **S3** using **CloudFormation**.  
-
-## 📌 Features  
-✅ Host a static website on S3  
-✅ CloudFormation template to automate setup  
-✅ Custom 404 Error Page (`error.html`)  
-✅ Public Access using Bucket Policy  
-✅ Fancy UI with CSS Animations & Marquee Tags  
-
----
 
 ## 📜 Prerequisites  
 Before deploying, ensure you have:  
