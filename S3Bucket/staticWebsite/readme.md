@@ -64,42 +64,5 @@ Alternatively, you can also get it from the **AWS S3 Console** under "Static Web
 ## 🖼️ **Homepage Preview**
 Below is a preview of the homepage:
 
-![Homepage Preview](index-preview.png)
+![Homepage Preview](s3StaticWebsite.png)
 
-> *(Ensure `index-preview.png` is uploaded to your S3 bucket or GitHub repository for proper rendering.)*
-
----
-
-## 🛠️ **Cleanup**
-If you want to **delete the static website**, run:
-```bash
-aws cloudformation delete-stack --stack-name S3StaticWebsite
-```
-This will remove the S3 bucket and website hosting.
-
----
-
-## 📢 **Conclusion**
-You have successfully deployed a **fancy static website** on **AWS S3** using **CloudFormation**! 🎉  
-
----
-
-💡 **Need Help?**  
-Feel free to open an issue or reach out. 🚀  
-```
-
----
-
-### **Instructions for Adding `index-preview.png`**
-1. Take a **screenshot** of `index.html` rendered in a browser.  
-2. Save it as `index-preview.png`.  
-3. Upload it to your **GitHub repository** or **S3 bucket**.  
-4. If hosting on GitHub, ensure it's in the root directory for proper linking.  
-5. If hosting on S3, use a public URL like:
-   ```
-   ![Homepage Preview](https://your-bucket-name.s3.amazonaws.com/index-preview.png)
-   ```
-6. **Commit & push** the `README.md` and `index-preview.png` to your repo.  
-
-Now your `README.md` contains **proper documentation with a screenshot preview**. 🚀  
-Let me know if you need any changes! 😃
