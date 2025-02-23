@@ -8,6 +8,7 @@ Resources:
       Role: arn:aws:iam::111122223333:role/lambda-role
       Code:
         ZipFile: |
+          import os
           const { S3Client, ListBucketsCommand } = require("@aws-sdk/client-s3");
           const s3 = new S3Client({ region: "us-east-1" }); // replace "us-east-1" with your AWS Region
 
