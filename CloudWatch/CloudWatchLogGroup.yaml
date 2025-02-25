@@ -4,4 +4,5 @@ Resources:
   myLogGroup: 
   Type: AWS::Logs::LogGroup
   Properties: 
+    LogGroupName: my-log-group
     RetentionInDays: 7
