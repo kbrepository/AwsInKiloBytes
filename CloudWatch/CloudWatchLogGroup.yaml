@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: This template will create a CloudWatch Group.
 Resources:
   myLogGroup: 
-  Type: AWS::Logs::LogGroup
-  Properties: 
-    LogGroupName: my-log-group
-    RetentionInDays: 7
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: my-log-group
+      RetentionInDays: 7
