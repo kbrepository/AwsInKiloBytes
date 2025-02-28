@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  Creates an SNS Topic if not provided, an SQS Queue, and an SNS Subscription.
+
+Parameters:
+  ExistingSNSTopicARN:
+    Type: String
+    Default: ""
+    Description: "Provide existing SNS Topic ARN if available. Leave blank to create a new SNS Topic."
+
+Conditions:
+  CreateSNSTopic: !Equals [!Ref ExistingSNSTopicARN, ""]
+
+Resources:
+  # SNS Topic (Only created if no existing ARN is provided)
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Condition: CreateSNSTopic
+    Properties:
+      DisplayName: "MySNSTopic"
+
+  # SQS Queue
+  SQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: MySQSQueue
+
+  # SQS Queue Policy to allow SNS to publish messages
+  SQSQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref SQSQueue
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action:
+              - "sqs:SendMessage"
+            Resource: !GetAtt SQSQueue.Arn
+            # Condition:
+            #   ArnEquals:
+            #     aws:SourceArn: !If
+            #       - CreateSNSTopic
+            #       - !Ref SNSTopic
+            #       - !Ref ExistingSNSTopicARN
+
+  # SNS Subscription to SQS
+  SNSSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: sqs
+      Endpoint: !GetAtt SQSQueue.Arn
+      TopicArn: !If
+        - CreateSNSTopic
+        - !Ref SNSTopic
+        - !Ref ExistingSNSTopicARN
+
+Outputs:
+  SNSTopicARN:
+    Description: "The ARN of the SNS Topic used."
+    Value: !If
+      - CreateSNSTopic
+      - !Ref SNSTopic
+      - !Ref ExistingSNSTopicARN
+
+  # SQSQueueURL:
+  #   Description: "URL of the created SQS Queue."
+  #   Value: !Ref SQSQueue
+
+  # SQSQueueARN:
+  #   Description: "ARN of the created SQS Queue."
+  #   Value: !GetAtt SQSQueue.Arn
