@@ -65,10 +65,4 @@ Outputs:
       - !Ref SNSTopic
       - !Ref ExistingSNSTopicARN
 
-  # SQSQueueURL:
-  #   Description: "URL of the created SQS Queue."
-  #   Value: !Ref SQSQueue
 
-  # SQSQueueARN:
-  #   Description: "ARN of the created SQS Queue."
-  #   Value: !GetAtt SQSQueue.Arn
