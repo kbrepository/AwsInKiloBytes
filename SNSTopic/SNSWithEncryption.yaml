@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  AccountBID:
+    Type: String
+    Description: "AWS Account ID of Account B Target Account"
+    Default: "421848983862"
+  S3BucketName:
+    Type: String
+    Description: "S3 Bucket that triggers SNS"
+    Default: "ses-demo-kb"
+
+Resources:
+  MySNSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: "KMS key for SNS encryption"
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "AllowRootAccount"
+            Effect: "Allow"
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+          - Sid: "AllowSNSServiceToEncryptMessages"
+            Effect: "Allow"
+            Principal:
+              Service: "sns.amazonaws.com"
+            Action:
+              - "kms:Encrypt"
+              - "kms:GenerateDataKey"
+            Resource: "*"
+          - Sid: "AllowS3ToUseKMSForSNS"
+            Effect: "Allow"
+            Principal:
+              Service: "s3.amazonaws.com"
+            Action:
+              - "kms:Encrypt"
+              - "kms:GenerateDataKey"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Sub "arn:aws:s3:::${S3BucketName}"
+          - Sid: "AllowSQSInAccountBToDecrypt"
+            Effect: "Allow"
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AccountBID}:root"
+            Action:
+              - "kms:Decrypt"
+              - "kms:DescribeKey"
+            Resource: "*"
+
+  MySNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: "MyCrossAccountSNSTopic"
+      TopicName: "MyCrossAccountSNSTopic"
+      KmsMasterKeyId: !Ref MySNSKey
+
+  SNSTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref MySNSTopic
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid : "Allow SNS to Pubilsh"
+            Effect: "Allow"
+            Principal:
+              Service: "s3.amazonaws.com"
+            Action: "sns:Publish"
+            Resource: !Ref MySNSTopic
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Sub "arn:aws:s3:::${S3BucketName}"
+          - Sid : "Allow SQS to subscribe"
+            Effect: "Allow"
+            Principal:
+              Service: "sqs.amazonaws.com"
+            Action:
+              - "sns:Subscribe"
+              - "sns:Publish"
+            Resource: !Ref MySNSTopic
+            Condition:
+              StringEquals:
+                "aws:SourceAccount": !Ref AccountBID
+
+Outputs:
+  SNSTopicARN:
+    Value: !Ref MySNSTopic
+  SNSKMSKeyARN:
+    Value: !GetAtt MySNSKey.Arn
