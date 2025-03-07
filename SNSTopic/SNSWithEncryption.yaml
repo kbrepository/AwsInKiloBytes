@@ -1,4 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
+Description: This template will create encrypted SNS topic and allow cross account SQS queue to subscribe.
 Parameters:
   AccountBID:
     Type: String
@@ -9,6 +10,7 @@ Parameters:
     Description: "S3 Bucket that triggers SNS"
     Default: "ses-demo-kb"
 
+
 Resources:
   MySNSKey:
     Type: AWS::KMS::Key
@@ -17,13 +19,13 @@ Resources:
       KeyPolicy:
         Version: "2012-10-17"
         Statement:
-          - Sid: "AllowRootAccount"
+          - Sid: "AllowRootAccountAccess"
             Effect: "Allow"
             Principal:
               AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
             Action: "kms:*"
             Resource: "*"
-          - Sid: "AllowSNSServiceToEncryptMessages"
+          - Sid: "AllowSNSServiceEncryption"
             Effect: "Allow"
             Principal:
               Service: "sns.amazonaws.com"
@@ -66,26 +68,36 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
-          - Sid : "Allow SNS to Pubilsh"
+          - Sid: "AllowS3ToPublishToSNS"
             Effect: "Allow"
             Principal:
-              Service: "s3.amazonaws.com"
+              Service: 
+              - "s3.amazonaws.com"
+              - "sqs.amazonaws.com"
             Action: "sns:Publish"
             Resource: !Ref MySNSTopic
             Condition:
               ArnLike:
                 aws:SourceArn: !Sub "arn:aws:s3:::${S3BucketName}"
-          - Sid : "Allow SQS to subscribe"
+              StringEquals:
+                aws:SourceAccount: !Ref AccountBID
+
+          - Sid: "AllowSQSAccountBToSubscribe"
+            Effect: "Allow"
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AccountBID}:root"
+            Action: "sns:Subscribe"
+            Resource: !Ref MySNSTopic
+
+          - Sid: "AllowSNSPublishToSQS"
             Effect: "Allow"
             Principal:
               Service: "sqs.amazonaws.com"
-            Action:
-              - "sns:Subscribe"
-              - "sns:Publish"
+            Action: "sns:Publish"
             Resource: !Ref MySNSTopic
             Condition:
               StringEquals:
-                "aws:SourceAccount": !Ref AccountBID
+                aws:SourceAccount: !Ref AccountBID
 
 Outputs:
   SNSTopicARN:
