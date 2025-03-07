@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  SNSTopicARN:
+    Type: String
+    Description: "Specify ARN of SNS topic from Account A"
+    Default: 'arn:aws:sns:us-east-1:826197656475:MyCrossAccountSNSTopic'
+  SNSAccountID:
+    Type: String
+    Description: "AWS Account ID of Account A"
+    Default: '826197656475'
+
+Resources:
+  MySQSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: "KMS key for SQS encryption"
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "AllowRootAccount"
+            Effect: "Allow"
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+          - Sid: "AllowSNSAccountAEncryption"
+            Effect: "Allow"
+            Principal:
+              AWS: !Ref SNSAccountID
+            Action:
+              - "kms:Encrypt"
+              - "kms:GenerateDataKey"
+            Resource: "*"
+
+  MySQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: "MyCrossAccountSQSQueue"
+      KmsMasterKeyId: !Ref MySQSKey
+
+  SQSQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref MySQSQueue
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "AllowSNSFromAccountA"
+            Effect: "Allow"
+            Principal:
+              Service: "sns.amazonaws.com"
+            Action: "sqs:SendMessage"
+            Resource: !GetAtt MySQSQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Ref SNSTopicARN
+
+  SNSSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref SNSTopicARN
+      Protocol: sqs
+      Endpoint: !GetAtt MySQSQueue.Arn
+      RawMessageDelivery: true
+
+Outputs:
+  SQSQueueARN:
+    Value: !GetAtt MySQSQueue.Arn
+  SQSKMSKeyARN:
+    Value: !GetAtt MySQSKey.Arn
