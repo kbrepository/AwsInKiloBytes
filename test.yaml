@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  2019A:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId: 'lt-xxxxxxxxxxxxx'
+        Version: '$Latest'      
+      UserData:
+        Fn::Base64: |
+          <powershell>
+          Start-Transcript -Path "C:\ProgramData\Amazon\userdata.txt"
+          #Get API Token to Call Metadata
+          [string]$token = Invoke-RestMethod -Headers @{"X-aws-ec2-metadata-token-ttl-seconds" = "21600"} -Method PUT -Uri http://169.254.169.254/latest/api/token
+
+          #Get InstanceID and pass to Variable
+          $instanceid = (Invoke-RestMethod -Headers @{"X-aws-ec2-metadata-token" = $token} -Method GET -Uri http://169.254.169.254/latest/meta-data/instance-id)
+
+          #Define New Computer Name Variable
+          $newname = $instanceid.SubString(0,15)
+
+          # Import AWS Tools for PowerShell
+          Import-Module AWSPowerShell
+
+          # Retrieve Local Credentials from Parameter Store
+          $lun = (Get-SSMParameter -Name "/EC2/LocalAdminUN" -Region "us-east-1").Value
+          $lpwd = (Get-SSMParameter -Name "/EC2/LocalAdminPWD" -WithDecryption $true -Region "us-east-1").Value
+
+          # Convert Local Password to Secure String
+          $seclpwd = ConvertTo-SecureString $lpwd -AsPlainText -Force
+          $lcredential = New-Object System.Management.Automation.PSCredential ($lun, $seclpwd)
+
+          # Retrieve Domain Credentials from Parameter Store
+          $dun = (Get-SSMParameter -Name "/EC2/DomainUser" -Region "us-east-1").Value
+          $dpwd = (Get-SSMParameter -Name "/EC2/DomainPWD" -WithDecryption $true -Region "us-east-1").Value
+
+          # Convert Domain Password to Secure String
+          $secdpwd = ConvertTo-SecureString $dpwd -AsPlainText -Force
+          $dcredential = New-Object System.Management.Automation.PSCredential ($dun, $secdpwd)
+
+          #Install AV
+          #Start-Process -FilePath 'D:\Software\AV.exe' -ArgumentList "/silent" -Wait
+
+          #Pull files from S3
+          aws s3 cp 's3://companycloudops-software/SourceAPP/' 'D:\Software\' --recursive
+
+          # Rename Computer and Join to Domain
+          Rename-Computer -NewName $newname -LocalCredential $lcredential -Force
+
+          Add-Computer -DomainName 'companycloudops.int' -Credential $dcredential -Options JoinWithNewName, AccountCreate
+
+          Stop-Transcript
+
+          Restart-Computer -Force
+          </powershell>

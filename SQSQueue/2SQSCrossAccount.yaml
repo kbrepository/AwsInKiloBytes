@@ -1,43 +1,68 @@
 AWSTemplateFormatVersion: '2010-09-09'
+Description: "Creates an encrypted SQS queue and subscribes to SNS from another AWS account."
+
 Parameters:
   SNSTopicARN:
     Type: String
-    Description: "Specify ARN of SNS topic from Account A"
-    Default: 'arn:aws:sns:us-east-1:826197656475:TestSNS'
+    Description: "ARN of the SNS topic from Account A."
+    Default: "arn:aws:sns:us-east-1:826197656475:MyCrossAccountSNSTopic-Test"
   SNSAccountID:
     Type: String
-    Description: "AWS Account ID of Account A"
-    Default: '826197656475'
+    Description: "AWS Account ID of the SNS owner (Account A)"
+    Default: "826197656475"
+  Tag:
+    Default: 'Test'
+    Description: "Specify Suffix Tag for resources"
+    Type: String
 
 Resources:
   MySQSKey:
     Type: AWS::KMS::Key
     Properties:
-      Description: "KMS key for SQS encryption"
+      Description: "KMS key for encrypting SQS messages"
       KeyPolicy:
         Version: "2012-10-17"
         Statement:
-          - Sid: "AllowRootAccount"
+          - Sid: "AllowRootAccess"
             Effect: "Allow"
             Principal:
               AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
             Action: "kms:*"
             Resource: "*"
-
-          - Sid: "AllowSNSAccountAEncryption"
+          - Sid: "AllowSNSFromAccountAEncryption"
             Effect: "Allow"
             Principal:
               AWS: !Ref SNSAccountID
             Action:
               - "kms:Encrypt"
-              - "kms:GenerateDataKey*"
+              - "kms:GenerateDataKey"
+            Resource: "*"
+          - Sid: "AllowSQSDecrypt"
+            Effect: "Allow"
+            Principal:
+              Service: "sqs.amazonaws.com"
+            Action:
               - "kms:Decrypt"
+              - "kms:DescribeKey"
+            Resource: "*"
+          - Sid: "Allow Cross Account SNS to use KMS."
+            Effect: "Allow"
+            Principal:
+              Service: "sns.amazonaws.com"
+            Action:
+              - "kms:Decrypt"
+              - "kms:GenerateDataKey*"
             Resource: "*"
 
+  MySNSKMSAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/sqs-${Tag}
+      TargetKeyId: !Ref MySQSKey
   MySQSQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: "MyCrossAccountSQSQueue2"
+      QueueName: !Sub MyCrossAccountSQSQueue-${Tag}
       KmsMasterKeyId: !Ref MySQSKey
 
   SQSQueuePolicy:
@@ -52,14 +77,11 @@ Resources:
             Effect: "Allow"
             Principal:
               Service: "sns.amazonaws.com"
-            Action:
-              - "sqs:SendMessage"
-              - "sqs:ReceiveMessage"
+            Action: "sqs:SendMessage"
             Resource: !GetAtt MySQSQueue.Arn
             Condition:
               ArnEquals:
                 aws:SourceArn: !Ref SNSTopicARN
-
 
   # SNSSubscription:
   #   Type: AWS::SNS::Subscription
