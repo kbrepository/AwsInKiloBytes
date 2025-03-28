@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "Creates an encrypted SQS queue and subscribes to SNS from another AWS account."
+
+Parameters:
+  SNSTopicARN:
+    Type: String
+    Description: "ARN of the SNS topic from Account A."
+    Default: "arn:aws:sns:us-east-1:826197656475:MyCrossAccountSNSTopic-Test"
+  SNSAccountID:
+    Type: String
+    Description: "AWS Account ID of the SNS owner (Account A)"
+    Default: "826197656475"
+  Tag:
+    Default: 'Test'
+    Description: "Specify Suffix Tag for resources"
+    Type: String
+
+Resources:
+  MySQSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: "KMS key for encrypting SQS messages"
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "AllowRootAccess"
+            Effect: "Allow"
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+          - Sid: "AllowSNSFromAccountAEncryption"
+            Effect: "Allow"
+            Principal:
+              AWS: !Ref SNSAccountID
+            Action:
+              - "kms:Encrypt"
+              - "kms:GenerateDataKey"
+            Resource: "*"
+          - Sid: "AllowSQSDecrypt"
+            Effect: "Allow"
+            Principal:
+              Service: "sqs.amazonaws.com"
+            Action:
+              - "kms:Decrypt"
+              - "kms:DescribeKey"
+            Resource: "*"
+          - Sid: "Allow Cross Account SNS to use KMS."
+            Effect: "Allow"
+            Principal:
+              Service: "sns.amazonaws.com"
+            Action:
+              - "kms:Decrypt"
+              - "kms:GenerateDataKey*"
+            Resource: "*"
+
+  MySNSKMSAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/sqs-${Tag}
+      TargetKeyId: !Ref MySQSKey
+  MySQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub MyCrossAccountSQSQueue-${Tag}
+      KmsMasterKeyId: !Ref MySQSKey
+
+  SQSQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref MySQSQueue
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "AllowSNSFromAccountA"
+            Effect: "Allow"
+            Principal:
+              Service: "sns.amazonaws.com"
+            Action: "sqs:SendMessage"
+            Resource: !GetAtt MySQSQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Ref SNSTopicARN
+
+  # SNSSubscription:
+  #   Type: AWS::SNS::Subscription
+  #   Properties:
+  #     TopicArn: !Ref SNSTopicARN
+  #     Protocol: sqs
+  #     Endpoint: !GetAtt MySQSQueue.Arn
+  #     RawMessageDelivery: true
+
+Outputs:
+  SQSQueueARN:
+    Value: !GetAtt MySQSQueue.Arn
+  SQSKMSKeyARN:
+    Value: !GetAtt MySQSKey.Arn
