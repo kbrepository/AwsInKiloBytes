@@ -1,0 +1,34 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS CloudFormation Template to create a KMS key with a specified key policy.'
+
+Resources:
+  MyKMSKey:
+    Type: 'AWS::KMS::Key'
+    Properties:
+      Description: 'An example KMS key created via CloudFormation'
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: 'Enable IAM User Permissions'
+            Effect: 'Allow'
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: 'kms:*'
+            Resource: !Sub 'arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/${MyKMSKey}'
+          - Sid: 'Allow use of the key'
+            Effect: 'Allow'
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:user/Alice'
+            Action:
+              - 'kms:Encrypt'
+              - 'kms:Decrypt'
+              - 'kms:ReEncrypt*'
+              - 'kms:GenerateDataKey*'
+            # Resource: !Sub 'arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/${MyKMSKey}'
+            Resource: !GetAtt MyKMSKey.Arn
+
+Outputs:
+  KMSKeyArn:
+    Description: 'ARN of the created KMS Key'
+    Value: !GetAtt MyKMSKey.Arn
